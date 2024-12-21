@@ -1,0 +1,16 @@
+**/node_modules/
+**/dist/
+
+.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+backend/.env
+
+client/.next/
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+
