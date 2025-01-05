@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/user.model";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../lib/utils";
-import { CustomRequest } from "../middleware/auth.middleware";
+import { AuthRequest } from "../middleware/auth.middleware";
 import cloudinary from "../lib/cloudinary";
 
 export const signupController = async (
@@ -97,7 +97,7 @@ export const logoutController = (req: Request, res: Response) => {
   }
 };
 
-export const updateProfile = async (req: CustomRequest, res: Response) => {
+export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const { profilePic } = req.body;
 
@@ -123,7 +123,7 @@ export const updateProfile = async (req: CustomRequest, res: Response) => {
   }
 };
 
-export const checkAuth = (req: CustomRequest, res: Response) => {
+export const checkAuth = (req: AuthRequest, res: Response) => {
   try {
     res.status(200).json(req.user);
   } catch (error: any) {
