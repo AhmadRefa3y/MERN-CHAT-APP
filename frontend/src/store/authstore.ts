@@ -2,13 +2,13 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
-// Define the shape of the store
 interface AuthState {
   isCheckingAuth: boolean;
   isSigningUp: boolean;
   isLoggingIn: boolean;
   isUpdatingProfile: boolean;
-  authUser: any | null; // Replace `string` with the type of your user object if it's more complex
+  onlineUsers: string[];
+  authUser: any | null;
   checkAuth: () => void;
   signUp: (formData: {
     fullName: string;
@@ -22,10 +22,10 @@ interface AuthState {
   }) => Promise<void>;
 }
 
-// Create the Zustand store with types
 const useAuthStore = create<AuthState>((set) => ({
   isCheckingAuth: true,
   isUpdatingProfile: false,
+  onlineUsers: [],
   authUser: null,
   checkAuth: async () => {
     try {
