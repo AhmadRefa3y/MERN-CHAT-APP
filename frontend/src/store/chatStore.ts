@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import useAuthStore from "./authstore";
 
 interface user {
     _id: string;
@@ -13,16 +14,20 @@ interface ThemeStore {
     users: user[];
     selectedUser: user | null;
     isUsersLoading: boolean;
-    IsMessagesLoading: boolean;
+    isMessagesLoading: boolean;
+    isSendingMessage: boolean;
     getUsers: () => void;
     getMessages: (userId: string) => void;
     sendMessage: (messageData: {}) => void;
     setSelectedUser: (selectedUser: user | null) => void;
+    subscribeToMessages: () => void;
+    unSubscribeToMessages: () => void;
 }
 
 const useChatStore = create<ThemeStore>((set, get) => ({
-    IsMessagesLoading: false,
+    isMessagesLoading: false,
     isUsersLoading: false,
+    isSendingMessage: false,
     selectedUser: null,
     messages: [],
     users: [],
@@ -41,39 +46,57 @@ const useChatStore = create<ThemeStore>((set, get) => ({
     },
 
     getMessages: async (userId) => {
-        set({ IsMessagesLoading: true });
+        set({ isMessagesLoading: true });
         try {
             const res = await axiosInstance.get(`/messages/${userId}`);
-            console.log({ messages: res.data });
-
             set({
                 messages: res.data,
             });
         } catch (error: any) {
             toast.error(error.response.data.messages);
         } finally {
-            set({ IsMessagesLoading: false });
+            set({ isMessagesLoading: false });
         }
     },
     sendMessage: async (messageData) => {
         const { selectedUser, messages } = get();
+        set({ isSendingMessage: true });
         try {
             const res = await axiosInstance.post(
                 `/messages/send/${selectedUser?._id}`,
                 messageData
             );
-            console.log({ res: res.data });
             set({
                 messages: [...messages, res.data],
             });
+            set({ isSendingMessage: false });
         } catch (error: any) {
             toast.error(error.response.data.messages);
+        } finally {
+            set({ isSendingMessage: false });
         }
     },
     setSelectedUser: (selectedUser) => {
         set({
             selectedUser: selectedUser,
         });
+    },
+    subscribeToMessages: () => {
+        const { selectedUser } = get();
+        if (!selectedUser) return;
+        const socket = useAuthStore.getState().socket;
+        socket.on("newMessage", (newMessage: any) => {
+            const isMessageSenFromSelectedUser =
+                newMessage.senderId === selectedUser?._id;
+            if (!isMessageSenFromSelectedUser) return;
+            set({
+                messages: [...get().messages, newMessage],
+            });
+        });
+    },
+    unSubscribeToMessages: () => {
+        const socket = useAuthStore.getState().socket;
+        socket.off("newMessage");
     },
 }));
 

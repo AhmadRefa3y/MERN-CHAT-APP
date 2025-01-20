@@ -4,6 +4,8 @@ import User from "../models/user.model";
 import message from "../models/message.model";
 import Message from "../models/message.model";
 import cloudinary from "../lib/cloudinary";
+import { getRecieverSocketId, io } from "../lib/socket";
+import { Socket } from "socket.io";
 
 export const getUsersForSidebar = async (req: AuthRequest, res: Response) => {
     try {
@@ -27,8 +29,18 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
                 { senderId: myId, receiverId: userToChatId },
                 { senderId: userToChatId, receiverId: myId },
             ],
-        });
-        res.status(200).json(messages);
+        })
+            .sort({ createdAt: -1 })
+            .limit(20);
+
+        res.status(200).json(
+            messages.sort((a, b) => {
+                return (
+                    new Date(a.createdAt).getTime() -
+                    new Date(b.createdAt).getTime()
+                );
+            })
+        );
     } catch (error: any) {
         console.error("Error in getMessages controller", error.message);
         res.status(500).json({ message: "Internal server error", error });
@@ -37,7 +49,7 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
 
 export const sendMessage = async (req: AuthRequest, res: Response) => {
     try {
-        const { text, image } = req.params;
+        const { text, image } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
 
@@ -56,6 +68,8 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
         });
         await newMessage.save();
         // add realtime Functionality
+        const reciverSocketID = getRecieverSocketId(receiverId);
+        io.to(reciverSocketID).emit("newMessage", newMessage);
         res.status(201).json(newMessage);
     } catch (error: any) {
         console.error("Error in getMessages controller", error.message);

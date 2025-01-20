@@ -1,20 +1,37 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import useChatStore from "../store/chatStore";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletonMessages ";
 import useAuthStore from "../store/authstore";
+import { formatMessageTime } from "../lib/utils";
 
 const ChatContainer = () => {
-    const { messages, selectedUser, getMessages, IsMessagesLoading } =
-        useChatStore();
-    console.log({ messages });
+    const {
+        messages,
+        selectedUser,
+        getMessages,
+        isMessagesLoading,
+        subscribeToMessages,
+        unSubscribeToMessages,
+    } = useChatStore();
     const { authUser } = useAuthStore();
+    const messageEndRef = useRef<null | HTMLDivElement>(null);
+
     useEffect(() => {
         getMessages(selectedUser?._id as string);
+        subscribeToMessages();
+        return () => {
+            unSubscribeToMessages();
+        };
     }, [getMessages, selectedUser]);
+    useEffect(() => {
+        if (messageEndRef.current && messages) {
+            messageEndRef.current.scrollIntoView({ behavior: "instant" });
+        }
+    }, [messages]);
 
-    if (IsMessagesLoading) {
+    if (isMessagesLoading) {
         return (
             <div className="flex-1 flex flex-col overflow-auto">
                 <ChatHeader />
@@ -23,7 +40,6 @@ const ChatContainer = () => {
             </div>
         );
     }
-    // return <div></div>;
     return (
         <div className="flex-1 flex flex-col overflow-auto">
             <ChatHeader />
@@ -46,7 +62,7 @@ const ChatContainer = () => {
                                         message.senderId === authUser._id
                                             ? authUser.profilePic ||
                                               "/avatar.png"
-                                            : selectedUser.profilePic ||
+                                            : selectedUser?.profilePic ||
                                               "/avatar.png"
                                     }
                                     alt="profile pic"
