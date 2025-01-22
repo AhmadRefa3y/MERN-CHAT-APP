@@ -11,7 +11,7 @@ export const generateToken = (userID: any, res: Response) => {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         sameSite: "strict",
         httpOnly: true,
-        secure: process.env.NODE_ENV !== "development",
+        // secure: process.env.NODE_ENV !== "development",
     });
 
     return token;

@@ -127,6 +127,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
 export const checkAuth = (req: AuthRequest, res: Response) => {
     try {
+        console.log(process.env.NODE_ENV);
         res.status(200).json(req.user);
     } catch (error: any) {
         console.error("Error in checkAuth controller", error.message);

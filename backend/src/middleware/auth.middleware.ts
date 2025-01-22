@@ -11,6 +11,7 @@ export const protectRoute = async (
     next: NextFunction
 ): Promise<void> => {
     try {
+        console.log(process.env.NODE_ENV);
         const token = req.cookies.jwt;
         if (!token) {
             res.status(401).json({

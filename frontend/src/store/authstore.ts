@@ -3,7 +3,10 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
-const BASE_URL = "http://localhost:3001";
+// const BASE_URL = "http://localhost:3001/api";
+
+const BASE_URL =
+    import.meta.env.MODE === "development" ? "http://localhost:3001/" : "/";
 
 interface AuthState {
     isCheckingAuth: boolean;
@@ -85,7 +88,6 @@ const useAuthStore = create<AuthState>((set, get) => ({
             });
             toast.success("Login Sucessfully");
             get().connectSocket();
-            console.log(get().onlineUsers);
         } catch (error: any) {
             toast.error(error.response.data.message);
         } finally {
