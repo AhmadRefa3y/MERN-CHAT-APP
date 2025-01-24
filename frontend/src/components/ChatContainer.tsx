@@ -14,6 +14,9 @@ const ChatContainer = () => {
         isMessagesLoading,
         subscribeToMessages,
         unSubscribeToMessages,
+        subscribeToTyping,
+        unSubscribeToTyping,
+        isUserTyping,
     } = useChatStore();
     const { authUser } = useAuthStore();
     const messageEndRef = useRef<null | HTMLDivElement>(null);
@@ -21,15 +24,18 @@ const ChatContainer = () => {
     useEffect(() => {
         getMessages(selectedUser?._id as string);
         subscribeToMessages();
+        subscribeToTyping();
+
         return () => {
             unSubscribeToMessages();
+            unSubscribeToTyping();
         };
     }, [getMessages, selectedUser]);
     useEffect(() => {
         if (messageEndRef.current && messages) {
-            messageEndRef.current.scrollIntoView({ behavior: "instant" });
+            messageEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
-    }, [messages]);
+    }, [messages, isUserTyping]);
 
     if (isMessagesLoading) {
         return (
@@ -86,6 +92,26 @@ const ChatContainer = () => {
                         </div>
                     </div>
                 ))}
+                {isUserTyping && (
+                    <div className="chat chat-start" ref={messageEndRef}>
+                        <div className=" chat-image avatar">
+                            <div className="size-10 rounded-full border">
+                                <img
+                                    src={
+                                        selectedUser?.profilePic ||
+                                        "/avatar.png"
+                                    }
+                                    alt="profile pic"
+                                />
+                            </div>
+                        </div>
+                        <div className="chat-bubble flex items-center justify-center bg-secondary">
+                            <div className="typingIndicatorBubbleDot"></div>
+                            <div className="typingIndicatorBubbleDot"></div>
+                            <div className="typingIndicatorBubbleDot"></div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <MessageInput />

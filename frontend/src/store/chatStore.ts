@@ -16,18 +16,23 @@ interface ThemeStore {
     isUsersLoading: boolean;
     isMessagesLoading: boolean;
     isSendingMessage: boolean;
+    isUserTyping: boolean;
     getUsers: () => void;
     getMessages: (userId: string) => void;
     sendMessage: (messageData: {}) => void;
+    typing: () => void;
     setSelectedUser: (selectedUser: user | null) => void;
     subscribeToMessages: () => void;
     unSubscribeToMessages: () => void;
+    subscribeToTyping: () => void;
+    unSubscribeToTyping: () => void;
 }
 
 const useChatStore = create<ThemeStore>((set, get) => ({
     isMessagesLoading: false,
     isUsersLoading: false,
     isSendingMessage: false,
+    isUserTyping: false,
     selectedUser: null,
     messages: [],
     users: [],
@@ -81,6 +86,13 @@ const useChatStore = create<ThemeStore>((set, get) => ({
             selectedUser: selectedUser,
         });
     },
+    typing: () => {
+        const { selectedUser } = get();
+        if (!selectedUser) return;
+        const socket = useAuthStore.getState().socket;
+        socket.emit("typing", selectedUser?._id);
+        console.log("front sent typing");
+    },
     subscribeToMessages: () => {
         const { selectedUser } = get();
         if (!selectedUser) return;
@@ -97,6 +109,31 @@ const useChatStore = create<ThemeStore>((set, get) => ({
     unSubscribeToMessages: () => {
         const socket = useAuthStore.getState().socket;
         socket.off("newMessage");
+    },
+    subscribeToTyping: () => {
+        const { selectedUser } = get();
+        const socket = useAuthStore.getState().socket;
+        let typingTimeout: ReturnType<typeof setTimeout> | null = null; // Declare a timeout variable
+
+        socket.on("userTyping", (userID: string) => {
+            const isMessageSenFromSelectedUser = userID === selectedUser?._id;
+            if (!isMessageSenFromSelectedUser) return;
+            set({ isUserTyping: true });
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+
+            // Set a timeout to reset the typing state after 2 seconds
+            typingTimeout = setTimeout(() => {
+                set({ isUserTyping: false });
+            }, 2000);
+
+            console.log("front received typing");
+        });
+    },
+    unSubscribeToTyping: () => {
+        const socket = useAuthStore.getState().socket;
+        socket.off("userTyping");
     },
 }));
 

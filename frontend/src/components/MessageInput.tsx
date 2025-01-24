@@ -7,7 +7,7 @@ const MessageInput = () => {
     const [text, setText] = useState("");
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { sendMessage, isSendingMessage } = useChatStore();
+    const { sendMessage, isSendingMessage, typing } = useChatStore();
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
@@ -77,7 +77,10 @@ const MessageInput = () => {
                         className="w-full input input-bordered rounded-lg input-sm sm:input-md"
                         placeholder="Type a message..."
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={(e) => {
+                            setText(e.target.value);
+                            typing();
+                        }}
                     />
                     <input
                         type="file"

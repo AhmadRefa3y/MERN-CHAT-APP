@@ -29,10 +29,16 @@ io.on("connection", (socket) => {
     const userId = socket.handshake.query.userId;
     if (userId) userSocketMap[userId as string] = socket.id;
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    socket.on("typing", (reciverID) => {
+        console.log(`User ${userId} is typing... to ${reciverID}`);
+        const reciverSocketID = getRecieverSocketId(reciverID);
+        io.to(reciverSocketID).emit("userTyping", userId);
+    });
     socket.on("disconnect", () => {
         console.log(`User disconnected: ${socket.id}`);
         delete userSocketMap[userId as string];
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
 });
+
 export { io, server, app };

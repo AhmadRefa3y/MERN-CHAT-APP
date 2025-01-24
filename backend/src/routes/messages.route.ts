@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { protectRoute } from "../middleware/auth.middleware";
 import {
-  getMessages,
-  getUsersForSidebar,
-  sendMessage,
+    getMessages,
+    getUsersForSidebar,
+    sendMessage,
 } from "../controllers/messages.controller";
 
 const MessageRouter = Router();
