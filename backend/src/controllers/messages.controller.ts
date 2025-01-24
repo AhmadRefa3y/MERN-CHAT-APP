@@ -29,9 +29,8 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
                 { senderId: myId, receiverId: userToChatId },
                 { senderId: userToChatId, receiverId: myId },
             ],
-        })
-            .sort({ createdAt: -1 })
-            .limit(20);
+        }).sort({ createdAt: -1 });
+        // .limit(20);
 
         res.status(200).json(
             messages.sort((a, b) => {
