@@ -28,12 +28,21 @@ io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id}`);
     const userId = socket.handshake.query.userId;
     if (userId) userSocketMap[userId as string] = socket.id;
+    
+    // Emit online users immediately when someone connects
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+    // Handle joining a chat room
+    socket.on("joinChat", (chatId: string) => {
+        socket.join(chatId);
+        console.log(`User ${userId} joined chat: ${chatId}`);
+    });
+
     socket.on("typing", (reciverID) => {
-        console.log(`User ${userId} is typing... to ${reciverID}`);
         const reciverSocketID = getRecieverSocketId(reciverID);
         io.to(reciverSocketID).emit("userTyping", userId);
     });
+
     socket.on("disconnect", () => {
         console.log(`User disconnected: ${socket.id}`);
         delete userSocketMap[userId as string];

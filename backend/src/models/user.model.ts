@@ -20,6 +20,12 @@ const userSchema = new moogoose.Schema(
       type: String,
       default: "",
     },
+    contacts: [
+      {
+        type: moogoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
